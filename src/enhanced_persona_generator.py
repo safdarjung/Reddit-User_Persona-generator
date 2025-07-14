@@ -1,367 +1,119 @@
-import nltk
-from nltk.corpus import stopwords
-from collections import Counter
+import google.generativeai as genai
+import json
 import re
-import random
-from datetime import datetime
 
-# Download necessary NLTK data (run once)
-try:
-    nltk.data.find("corpora/stopwords")
-except LookupError:
-    nltk.download("stopwords")
-try:
-    nltk.data.find("tokenizers/punkt")
-except LookupError:
-    nltk.download("punkt")
-try:
-    nltk.data.find("tokenizers/punkt_tab")
-except LookupError:
-    nltk.download("punkt_tab")
+def generate_enhanced_persona(scraped_data, username, google_api_key):
+    """Generates a comprehensive user persona using the Gemini LLM."""
+    genai.configure(api_key=google_api_key)
+    model = genai.GenerativeModel('gemini-2.5-flash')
 
-def analyze_text_for_keywords(text):
-    """Analyzes text to extract keywords and their frequencies."""
-    words = nltk.word_tokenize(text.lower())
-    filtered_words = [word for word in words if word.isalnum() and word not in stopwords.words("english")]
-    return Counter(filtered_words)
+    all_comments = [comment['body'] for comment in scraped_data['comments']]
+    all_posts = []
+    for post in scraped_data['posts']:
+        all_posts.append(post['title'])
+        if post['selftext']:
+            all_posts.append(post['selftext'])
 
-def extract_demographics(scraped_data, username):
-    """Extract demographic information from Reddit data."""
-    # Basic demographic inference (can be enhanced with more sophisticated analysis)
-    age_indicators = {
-        'teen': ['school', 'homework', 'parents', 'teenager', 'high school'],
-        'young_adult': ['college', 'university', 'student', 'graduation', 'first job'],
-        'adult': ['work', 'job', 'career', 'mortgage', 'marriage', 'kids'],
-        'middle_aged': ['retirement', 'children', 'family', 'house', 'savings'],
-        'senior': ['grandchildren', 'pension', 'retired', 'medicare']
-    }
-    
-    location_indicators = {
-        'US': ['america', 'usa', 'united states', 'dollar', 'fahrenheit'],
-        'UK': ['britain', 'england', 'uk', 'pound', 'celsius', 'london'],
-        'Canada': ['canada', 'toronto', 'vancouver', 'canadian'],
-        'Australia': ['australia', 'sydney', 'melbourne', 'aussie']
-    }
-    
-    all_text = []
-    for comment in scraped_data["comments"]:
-        all_text.append(comment["body"].lower())
-    for post in scraped_data["posts"]:
-        all_text.append(post["title"].lower())
-        if post["selftext"]:
-            all_text.append(post["selftext"].lower())
-    
-    combined_text = " ".join(all_text)
-    
-    # Age estimation
-    age_group = "Unknown"
-    age_scores = {}
-    for age, indicators in age_indicators.items():
-        score = sum(combined_text.count(indicator) for indicator in indicators)
-        age_scores[age] = score
-    
-    if age_scores:
-        age_group = max(age_scores, key=age_scores.get)
-        if age_scores[age_group] == 0:
-            age_group = "Unknown"
-    
-    # Location estimation
-    location = "Unknown"
-    location_scores = {}
-    for loc, indicators in location_indicators.items():
-        score = sum(combined_text.count(indicator) for indicator in indicators)
-        location_scores[loc] = score
-    
-    if location_scores:
-        location = max(location_scores, key=location_scores.get)
-        if location_scores[location] == 0:
-            location = "Unknown"
-    
-    return {
-        'age_group': age_group,
-        'location': location
-    }
+    combined_text = " ".join(all_comments + all_posts)
 
-def analyze_personality_traits(scraped_data):
-    """Analyze personality traits based on Reddit activity."""
-    all_text = []
-    for comment in scraped_data["comments"]:
-        all_text.append(comment["body"].lower())
-    for post in scraped_data["posts"]:
-        all_text.append(post["title"].lower())
-        if post["selftext"]:
-            all_text.append(post["selftext"].lower())
-    
-    combined_text = " ".join(all_text)
-    
-    # MBTI-style personality analysis
-    personality_indicators = {
-        'extrovert': ['party', 'social', 'friends', 'meeting', 'group', 'people'],
-        'introvert': ['alone', 'quiet', 'home', 'solitude', 'reading', 'myself'],
-        'thinking': ['logic', 'analysis', 'rational', 'facts', 'data', 'objective'],
-        'feeling': ['emotions', 'feelings', 'empathy', 'heart', 'care', 'love'],
-        'judging': ['plan', 'schedule', 'organized', 'structure', 'deadline'],
-        'perceiving': ['flexible', 'spontaneous', 'adapt', 'open', 'explore'],
-        'sensing': ['practical', 'realistic', 'details', 'facts', 'experience'],
-        'intuition': ['creative', 'imagination', 'possibilities', 'future', 'ideas']
-    }
-    
-    trait_scores = {}
-    for trait, indicators in personality_indicators.items():
-        score = sum(combined_text.count(indicator) for indicator in indicators)
-        trait_scores[trait] = score
-    
-    # Determine dominant traits
-    personality = {
-        'extrovert_introvert': 'extrovert' if trait_scores.get('extrovert', 0) > trait_scores.get('introvert', 0) else 'introvert',
-        'thinking_feeling': 'thinking' if trait_scores.get('thinking', 0) > trait_scores.get('feeling', 0) else 'feeling',
-        'judging_perceiving': 'judging' if trait_scores.get('judging', 0) > trait_scores.get('perceiving', 0) else 'perceiving',
-        'sensing_intuition': 'sensing' if trait_scores.get('sensing', 0) > trait_scores.get('intuition', 0) else 'intuition'
-    }
-    
-    return personality
+    # Prepare the prompt for the LLM
+    prompt = f"""
+    Analyze the following Reddit user's comments and posts to generate a detailed user persona.
+    The persona should be returned as a JSON object with the following structure:
 
-def analyze_motivations(scraped_data):
-    """Analyze user motivations based on Reddit activity."""
-    all_text = []
-    for comment in scraped_data["comments"]:
-        all_text.append(comment["body"].lower())
-    for post in scraped_data["posts"]:
-        all_text.append(post["title"].lower())
-        if post["selftext"]:
-            all_text.append(post["selftext"].lower())
-    
-    combined_text = " ".join(all_text)
-    
-    motivation_indicators = {
-        'convenience': ['easy', 'quick', 'simple', 'convenient', 'fast', 'efficient'],
-        'wellness': ['health', 'fitness', 'exercise', 'diet', 'wellness', 'healthy'],
-        'speed': ['fast', 'quick', 'rapid', 'immediate', 'instant', 'speed'],
-        'preferences': ['like', 'prefer', 'favorite', 'enjoy', 'love', 'choose'],
-        'comfort': ['comfort', 'cozy', 'relaxing', 'peaceful', 'calm', 'safe'],
-        'dietary_needs': ['diet', 'nutrition', 'food', 'eating', 'meal', 'recipe']
-    }
-    
-    motivation_scores = {}
-    for motivation, indicators in motivation_indicators.items():
-        score = sum(combined_text.count(indicator) for indicator in indicators)
-        motivation_scores[motivation] = score
-    
-    # Normalize scores to 0-100 scale
-    max_score = max(motivation_scores.values()) if motivation_scores.values() else 1
-    normalized_scores = {k: int((v / max_score) * 100) if max_score > 0 else 0 
-                        for k, v in motivation_scores.items()}
-    
-    return normalized_scores
+    {{
+        "name": "string", // The Reddit username, capitalized
+        "age": "string", // Estimated age range (e.g., "20-25", "30-40", "Unknown")
+        "occupation": "string", // Estimated occupation (e.g., "Software Engineer", "Student", "Unknown")
+        "status": "string", // Estimated relationship status or general life status (e.g., "Single", "Married", "Student", "Working Professional", "Unknown")
+        "location": "string", // Estimated general location (e.g., "North America", "Europe", "Unknown")
+        "tier": "string", // User activity tier (e.g., "Casual User", "Active Contributor", "Power User")
+        "archetype": "string", // A user archetype (e.g., "The Explorer", "The Analyst", "The Helper")
+        "personality": {{
+            "extrovert_introvert": "string", // "extrovert" or "introvert"
+            "thinking_feeling": "string", // "thinking" or "feeling"
+            "judging_perceiving": "string", // "judging" or "perceiving"
+            "sensing_intuition": "string" // "sensing" or "intuition"
+        }},
+        "motivations": {{
+            "convenience": "integer", // Score 0-100
+            "wellness": "integer", // Score 0-100
+            "speed": "integer", // Score 0-100
+            "preferences": "integer", // Score 0-100
+            "comfort": "integer", // Score 0-100
+            "dietary_needs": "integer" // Score 0-100
+        }},
+        "behaviors_habits": ["string"], // List of observed behaviors and habits
+        "goals_needs": ["string"], // List of inferred goals and needs
+        "frustrations": ["string"], // List of inferred frustrations
+        "common_topics": ["string"], // List of top 5-10 common topics
+        "sentiment": "string", // Overall sentiment ("Positive", "Negative", "Neutral")
+        "quote": "string", // A representative quote from their content
+        "citations": [ // Up to 5 relevant citations (comments/posts)
+            {{
+                "id": "integer",
+                "type": "string", // "comment" or "post"
+                "content": "string", // Snippet of the content
+                "permalink": "string", // Full permalink to the Reddit content
+                "score": "integer" // Score of the comment/post
+            }}
+        ]
+    }}
 
-def extract_behaviors_and_habits(scraped_data):
-    """Extract behavior patterns and habits from Reddit data."""
-    behaviors = []
-    
-    # Analyze posting patterns
-    post_count = len(scraped_data["posts"])
-    comment_count = len(scraped_data["comments"])
-    
-    if post_count > comment_count:
-        behaviors.append("Tends to create original content rather than just commenting on others' posts.")
-    elif comment_count > post_count * 2:
-        behaviors.append("More likely to engage in discussions and comment on others' content.")
-    
-    # Analyze content themes
-    all_text = []
-    for comment in scraped_data["comments"]:
-        all_text.append(comment["body"].lower())
-    for post in scraped_data["posts"]:
-        all_text.append(post["title"].lower())
-        if post["selftext"]:
-            all_text.append(post["selftext"].lower())
-    
-    combined_text = " ".join(all_text)
-    
-    # Technology usage patterns
-    tech_indicators = ['online', 'app', 'website', 'digital', 'internet', 'computer']
-    if any(indicator in combined_text for indicator in tech_indicators):
-        behaviors.append("Shows high comfort level with technology and digital platforms.")
-    
-    # Social patterns
-    social_indicators = ['friends', 'family', 'social', 'party', 'meeting']
-    if any(indicator in combined_text for indicator in social_indicators):
-        behaviors.append("Demonstrates active social engagement and relationship building.")
-    
-    # Work patterns
-    work_indicators = ['work', 'job', 'office', 'career', 'professional']
-    if any(indicator in combined_text for indicator in work_indicators):
-        behaviors.append("Frequently discusses work-related topics and professional development.")
-    
-    return behaviors
+    Reddit Username: {username}
 
-def extract_goals_and_needs(scraped_data):
-    """Extract user goals and needs from Reddit activity."""
-    goals = []
-    
-    all_text = []
-    for comment in scraped_data["comments"]:
-        all_text.append(comment["body"].lower())
-    for post in scraped_data["posts"]:
-        all_text.append(post["title"].lower())
-        if post["selftext"]:
-            all_text.append(post["selftext"].lower())
-    
-    combined_text = " ".join(all_text)
-    
-    # Goal indicators
-    goal_patterns = {
-        'learning': ['learn', 'study', 'education', 'knowledge', 'skill'],
-        'health': ['health', 'fitness', 'exercise', 'diet', 'wellness'],
-        'career': ['career', 'job', 'promotion', 'professional', 'work'],
-        'relationships': ['relationship', 'dating', 'marriage', 'family', 'friends'],
-        'financial': ['money', 'savings', 'investment', 'financial', 'budget']
-    }
-    
-    for goal_type, indicators in goal_patterns.items():
-        if any(indicator in combined_text for indicator in indicators):
-            if goal_type == 'learning':
-                goals.append("To continuously learn and develop new skills.")
-            elif goal_type == 'health':
-                goals.append("To maintain a healthy lifestyle and improve physical well-being.")
-            elif goal_type == 'career':
-                goals.append("To advance professionally and achieve career goals.")
-            elif goal_type == 'relationships':
-                goals.append("To build and maintain meaningful relationships.")
-            elif goal_type == 'financial':
-                goals.append("To achieve financial stability and security.")
-    
-    return goals
+    User's Comments:
+    {all_comments}
 
-def extract_frustrations(scraped_data):
-    """Extract user frustrations from Reddit activity."""
-    frustrations = []
-    
-    all_text = []
-    for comment in scraped_data["comments"]:
-        all_text.append(comment["body"].lower())
-    for post in scraped_data["posts"]:
-        all_text.append(post["title"].lower())
-        if post["selftext"]:
-            all_text.append(post["selftext"].lower())
-    
-    combined_text = " ".join(all_text)
-    
-    # Frustration indicators
-    frustration_indicators = ['annoying', 'frustrating', 'hate', 'terrible', 'awful', 'worst', 'problem', 'issue']
-    negative_sentiment_phrases = []
-    
-    sentences = nltk.sent_tokenize(combined_text)
-    for sentence in sentences:
-        if any(indicator in sentence for indicator in frustration_indicators):
-            negative_sentiment_phrases.append(sentence.strip())
-    
-    # Convert to user-friendly frustration statements
-    if negative_sentiment_phrases:
-        for phrase in negative_sentiment_phrases[:3]:  # Limit to top 3
-            frustrations.append(f"Experiences difficulty with: {phrase[:100]}...")
-    
-    return frustrations
+    User's Posts:
+    {all_posts}
 
-def generate_enhanced_persona(scraped_data, username):
-    """Generates a comprehensive user persona based on scraped Reddit data."""
-    demographics = extract_demographics(scraped_data, username)
-    personality = analyze_personality_traits(scraped_data)
-    motivations = analyze_motivations(scraped_data)
-    behaviors = extract_behaviors_and_habits(scraped_data)
-    goals = extract_goals_and_needs(scraped_data)
-    frustrations = extract_frustrations(scraped_data)
-    
-    # Generate common topics
-    all_text = []
-    for comment in scraped_data["comments"]:
-        all_text.append(comment["body"])
-    for post in scraped_data["posts"]:
-        all_text.append(post["title"])
-        if post["selftext"]:
-            all_text.append(post["selftext"])
-    
-    combined_text = " ".join(all_text)
-    keywords = analyze_text_for_keywords(combined_text)
-    top_keywords = [word for word, count in keywords.most_common(10)]
-    
-    # Sentiment analysis
-    positive_words = ["love", "great", "happy", "good", "awesome", "excellent", "amazing"]
-    negative_words = ["hate", "bad", "sad", "terrible", "worse", "awful", "horrible"]
-    
-    sentiment_score = 0
-    for word in nltk.word_tokenize(combined_text.lower()):
-        if word in positive_words:
-            sentiment_score += 1
-        elif word in negative_words:
-            sentiment_score -= 1
-    
-    if sentiment_score > 0:
-        sentiment = "Positive"
-    elif sentiment_score < 0:
-        sentiment = "Negative"
-    else:
-        sentiment = "Neutral"
-    
-    # Generate citations
-    citations = []
-    citation_id = 1
-    
-    for comment in scraped_data["comments"][:5]:  # Limit citations
-        citations.append({
-            "id": citation_id,
-            "type": "comment",
-            "content": comment["body"],
-            "permalink": f"https://www.reddit.com{comment['permalink']}",
-            "score": comment["score"]
-        })
-        citation_id += 1
-    
-    for post in scraped_data["posts"][:5]:  # Limit citations
-        citations.append({
-            "id": citation_id,
-            "type": "post",
-            "content": post["title"] + " " + (post["selftext"] if post["selftext"] else ""),
-            "permalink": f"https://www.reddit.com{post['permalink']}",
-            "score": post["score"]
-        })
-        citation_id += 1
-    
-    # Estimate age and occupation based on content
-    age_mapping = {
-        'teen': '16-19',
-        'young_adult': '20-25',
-        'adult': '26-40',
-        'middle_aged': '41-55',
-        'senior': '55+'
-    }
-    
-    estimated_age = age_mapping.get(demographics['age_group'], 'Unknown')
-    
-    # Generate archetype based on activity patterns
-    archetypes = ['The Creator', 'The Explorer', 'The Analyst', 'The Connector', 'The Helper']
-    archetype = random.choice(archetypes)  # Can be enhanced with more sophisticated analysis
-    
-    persona = {
-        "name": username.title(),
-        "age": estimated_age,
-        "occupation": "Unknown",  # Would need more sophisticated analysis
-        "status": "Unknown",      # Would need more sophisticated analysis
-        "location": demographics['location'],
-        "tier": "Regular User",   # Based on activity level
-        "archetype": archetype,
-        "personality": personality,
-        "motivations": motivations,
-        "behaviors_habits": behaviors,
-        "goals_needs": goals,
-        "frustrations": frustrations,
-        "common_topics": top_keywords,
-        "sentiment": sentiment,
-        "citations": citations,
-        "quote": f"Based on {len(scraped_data['comments'])} comments and {len(scraped_data['posts'])} posts analyzed."
-    }
-    
-    return persona
+    Combined Text for Analysis:
+    {combined_text}
+    """
+
+    try:
+        response = model.generate_content(prompt)
+        persona_json_str = response.text
+        
+        # Clean the response to ensure it's valid JSON
+        # Sometimes the LLM might add markdown or extra text
+        persona_json_str = persona_json_str.strip()
+        if persona_json_str.startswith("```json"):
+            persona_json_str = persona_json_str[len("```json"):].strip()
+        if persona_json_str.endswith("```"):
+            persona_json_str = persona_json_str[:-len("```")].strip()
+
+        persona = json.loads(persona_json_str)
+
+        # Ensure citations are properly formatted and limited
+        citations = []
+        citation_id = 1
+        for comment in scraped_data['comments'][:5]: # Limit to 5 comments
+            citations.append({
+                "id": citation_id,
+                "type": "comment",
+                "content": comment['body'][:200], # Truncate content for brevity
+                "permalink": f"https://www.reddit.com{comment['permalink']}",
+                "score": comment['score']
+            })
+            citation_id += 1
+        for post in scraped_data['posts'][:5]: # Limit to 5 posts
+            citations.append({
+                "id": citation_id,
+                "type": "post",
+                "content": (post['title'] + " " + post['selftext'])[:200], # Truncate content
+                "permalink": f"https://www.reddit.com{post['permalink']}",
+                "score": post['score']
+            })
+            citation_id += 1
+        persona['citations'] = citations
+
+        return persona
+    except Exception as e:
+        print(f"Error generating persona with LLM: {e}")
+        # Fallback or raise an error
+        raise Exception(f"Failed to generate persona using LLM: {e}")
 
 if __name__ == '__main__':
     # Example usage with dummy data
@@ -377,12 +129,10 @@ if __name__ == '__main__':
         ]
     }
     
-    persona = generate_enhanced_persona(dummy_scraped_data, "testuser")
-    print("Generated Enhanced Persona:")
-    print(f"Name: {persona['name']}")
-    print(f"Age: {persona['age']}")
-    print(f"Location: {persona['location']}")
-    print(f"Archetype: {persona['archetype']}")
-    print(f"Personality: {persona['personality']}")
-    print(f"Motivations: {persona['motivations']}")
-
+    # You would need to provide a real API key here for testing
+    try:
+        persona = generate_enhanced_persona(dummy_scraped_data, "testuser", "YOUR_GOOGLE_API_KEY")
+        print("Generated Enhanced Persona:")
+        print(json.dumps(persona, indent=2))
+    except Exception as e:
+        print(f"Test failed: {e}")

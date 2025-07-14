@@ -1,14 +1,11 @@
-
 praw
 
 
-
 nltk
-
 
 
 streamlit
 
 
 plotly
-
+google-generativeai

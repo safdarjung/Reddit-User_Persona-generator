@@ -252,6 +252,10 @@ def main():
     client_id = st.sidebar.text_input("Client ID", type="password", help="Enter your Reddit app client ID (found in your Reddit app settings).")
     client_secret = st.sidebar.text_input("Client Secret", type="password", help="Enter your Reddit app client secret (found in your Reddit app settings).")
     user_agent = st.sidebar.text_input("User Agent", value="PersonaGenerator/2.0", help="A unique identifier for your app, e.g., 'MyApp/1.0'.")
+
+    # Google AI Studio API Key
+    st.sidebar.subheader("Google AI Studio API Key")
+    google_api_key = st.sidebar.text_input("Google API Key", type="password", help="Your API key for Google AI Studio (Gemini).")
     
     # Data scraping options
     st.sidebar.subheader("Scraping Options")
@@ -266,7 +270,7 @@ def main():
     )
     
     if st.button("Generate Enhanced Persona", type="primary"):
-        if not all([client_id, client_secret, user_agent]):
+        if not all([client_id, client_secret, user_agent, google_api_key]):
             st.error("Please provide all required Reddit API credentials in the sidebar to proceed.")
             return
         
@@ -280,6 +284,16 @@ def main():
             return
         
         try:
+            import sys
+            from io import StringIO
+
+            # Create a StringIO object to capture output
+            old_stdout = sys.stdout
+            old_stderr = sys.stderr
+            redirected_output = StringIO()
+            sys.stdout = redirected_output
+            sys.stderr = redirected_output
+
             with st.spinner(f"Analyzing user: {username}..."):
                 # Initialize Reddit instance
                 reddit = initialize_reddit(client_id, client_secret, user_agent)
@@ -294,10 +308,18 @@ def main():
                 
                 # Generate enhanced persona
                 st.info("Generating enhanced persona...")
-                persona = generate_enhanced_persona(scraped_data, username)
+                persona = generate_enhanced_persona(scraped_data, username, google_api_key)
                 
                 # Display results in professional format
                 st.success("Enhanced persona generated successfully!")
+            
+            # Restore stdout and stderr
+            sys.stdout = old_stdout
+            sys.stderr = old_stderr
+            
+            # Display captured logs
+            with st.expander("View Logs"):
+                st.code(redirected_output.getvalue())
                 
                 # Main persona display
                 col1, col2, col3 = st.columns([1, 2, 1])
@@ -415,8 +437,13 @@ def main():
                 )
                 
         except Exception as e:
+            # Ensure stdout and stderr are restored even if an error occurs
+            sys.stdout = old_stdout
+            sys.stderr = old_stderr
             st.error(f"An error occurred: {str(e)}")
             st.info("Please check your Reddit API credentials and try again.")
+            with st.expander("View Logs (Error)"):
+                st.code(redirected_output.getvalue())
     
     # Instructions section
     with st.expander("📖 How to Use This Application"):
