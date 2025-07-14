@@ -3,6 +3,8 @@ import os
 from datetime import datetime
 import plotly.graph_objects as go
 import plotly.express as px
+import sys
+from io import StringIO
 from src.reddit_scraper import initialize_reddit, extract_username_from_url, scrape_redditor_data
 from src.enhanced_persona_generator import generate_enhanced_persona
 

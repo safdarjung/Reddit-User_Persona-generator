@@ -16,10 +16,12 @@ REDDIT_CLIENT_ID = "YOUR_CLIENT_ID_HERE"
 REDDIT_CLIENT_SECRET = "YOUR_CLIENT_SECRET_HERE"
 REDDIT_USER_AGENT = "PersonaGenerator/2.0 by YourUsername"
 
+# Replace with your Google AI Studio API Key
+GOOGLE_API_KEY = "YOUR_GOOGLE_API_KEY_HERE"
+
 # Example Reddit user URLs for testing
 SAMPLE_URLS = [
     "https://www.reddit.com/user/kojied/",
     "https://www.reddit.com/user/Hungry-Move-6603/",
     # Add more sample URLs here
 ]
-
