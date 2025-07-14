@@ -1,0 +1,103 @@
+================================================================================
+REDDIT USER PERSONA REPORT
+================================================================================
+
+USERNAME: Kojied
+GENERATED ON: 2025-07-14 18:45:33
+
+BASIC INFORMATION
+----------------------------------------
+Age: 26-40
+Occupation: Unknown
+Status: Unknown
+Location: UK
+Tier: Regular User
+Archetype: The Helper
+
+PERSONALITY
+----------------------------------------
+Extrovert Introvert: Extrovert
+Thinking Feeling: Feeling
+Judging Perceiving: Judging
+Sensing Intuition: Sensing
+
+MOTIVATIONS
+----------------------------------------
+Convenience: 24/100
+Wellness: 10/100
+Speed: 18/100
+Preferences: 100/100
+Comfort: 8/100
+Dietary Needs: 24/100
+
+BEHAVIOR & HABITS
+----------------------------------------
+• More likely to engage in discussions and comment on others' content.
+• Shows high comfort level with technology and digital platforms.
+• Demonstrates active social engagement and relationship building.
+• Frequently discusses work-related topics and professional development.
+
+GOALS & NEEDS
+----------------------------------------
+• To continuously learn and develop new skills.
+• To maintain a healthy lifestyle and improve physical well-being.
+• To advance professionally and achieve career goals.
+• To build and maintain meaningful relationships.
+• To achieve financial stability and security.
+
+FRUSTRATIONS
+----------------------------------------
+• Experiences difficulty with: high quantity stuff is easy to stock, and you could have multiple trading posts up without any major...
+• Experiences difficulty with: also left, considering there’ll be an awkward gap between your 3rd city, where ai civs will most lik...
+• Experiences difficulty with: i know how the warriors give us slight hope just to disappoint didn’t doubt warriors would lose this...
+
+COMMON TOPICS
+----------------------------------------
+get, https, like, people, one, also, would, since, way, see
+
+REPRESENTATIVE QUOTE
+----------------------------------------
+"Based on 100 comments and 31 posts analyzed."
+
+CITATIONS & SOURCES
+----------------------------------------
+[1] (COMMENT) Score: 10
+Content: Sorry to hear that man, in the future you may want to have multiple granaries, one close to your berries/deer/fish and one for your veggies/apples/hon...
+Source: https://www.reddit.com/r/ManorLords/comments/1ly3nuf/my_granary_burned_down/n2r16t2/
+
+[2] (COMMENT) Score: 3
+Content: Yeah but it doesn’t seem to affect much though...
+Source: https://www.reddit.com/r/ManorLords/comments/1lwfdh8/anyone_else_having_an_issue_where_their_trading/n2dn0vm/
+
+[3] (COMMENT) Score: 2
+Content: Incredible stuff! How did you maintain character consistency? Did you generate a consistent character image and then use the image-to-video feature?...
+Source: https://www.reddit.com/r/ChatGPT/comments/1lvtwj3/i_used_ai_to_create_this_short_film_on_human/n2b07h0/
+
+[4] (COMMENT) Score: 3
+Content: I do too but I rarely finish a game haha. Too little late game content...
+Source: https://www.reddit.com/r/ManorLords/comments/1lse9cn/great_game_i_hope_there_is_something_new_added_in/n1i5k2p/
+
+[5] (COMMENT) Score: 6
+Content: I do too but I rarely finish a game haha. Too little late game content...
+Source: https://www.reddit.com/r/ManorLords/comments/1lse9cn/great_game_i_hope_there_is_something_new_added_in/n1i52vu/
+
+[6] (POST) Score: 0
+Content: I feel violated by intern season There's this bar that I frequent a few blocks away from my house. Technically different neighborhood, but generally h...
+Source: https://www.reddit.com/r/newyorkcity/comments/1lykkqf/i_feel_violated_by_intern_season/
+
+[7] (POST) Score: 1
+Content: H1B holders, what are your thoughts on the narrative that you are being exploited? ...
+Source: https://www.reddit.com/r/AskReddit/comments/1hnx8j0/h1b_holders_what_are_your_thoughts_on_the/
+
+[8] (POST) Score: 1
+Content: H1B holders, do you feel exploited, or see it as an opportunity to build a better life for you in the US? ...
+Source: https://www.reddit.com/r/AskReddit/comments/1hnx7lj/h1b_holders_do_you_feel_exploited_or_see_it_as_an/
+
+[9] (POST) Score: 1
+Content: What needs to happen for the league to review the inconsistencies of the refs? [removed]...
+Source: https://www.reddit.com/r/nba/comments/1hcopxo/what_needs_to_happen_for_the_league_to_review_the/
+
+[10] (POST) Score: 1
+Content: Are you guys for/against banning Tiktok in the US? [removed]...
+Source: https://www.reddit.com/r/Conservative/comments/1h8ddbp/are_you_guys_foragainst_banning_tiktok_in_the_us/
+

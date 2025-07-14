@@ -1,0 +1,14 @@
+
+praw
+
+
+
+nltk
+
+
+
+streamlit
+
+
+plotly
+
